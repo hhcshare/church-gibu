@@ -3,8 +3,21 @@
 
 # 개인정보등 민감한 정보 처리 방법
 ## 기본 구조 
-GitHub Pages -> Firebase Authentication -> Cloud Functions -> Firestore
+GitHub Pages -> Firebase Authentication -> Cloud Functions -> Firestore (암호화)
 
 
+## 입력받을 정보
+1. 성함
+2. 주민번호
+3. 번화번호
+4. 주소
+
+## 개인정보 고지
+1. 활용 범위 공지
+2. 교적 등록 교인에 대해서만 발행 가능
+3. 26년1월초에 국세청 신고 예정 공지 필요.
+
+# 공지 사항
+공지 할 방법 간구해야.
 
 
