@@ -54,6 +54,26 @@
 
             <small id="phoneMessage"></small>
         </div>
+
+            <div class="form-group">
+                <label id="familyTotalRequestLabel">가족합산요청 여부 선택</label>
+                <div class="radio-group" style="justify-content:center;" role="group" aria-labelledby="familyTotalRequestLabel">
+                    <input type="radio" id="familyTotalYes" text = "예" name="familyTotalRequest" value="yes" required>
+                    <label for="familyTotalYes">예</label>
+                    <input type="radio" id="familyTotalNo" text = "아니오" name="familyTotalRequest" value="no" required>
+                    <label for="familyTotalNo">아니오</label>
+                </div>
+                <fieldset id="familyNamesFields" hidden disabled>
+                    <legend>가족 이름</legend>
+                    <div class="family-names-row">
+                        <div id="familyNames">
+                            <input type="text" name="familyNames" aria-label="가족 이름 1" placeholder="가족 이름을 입력하세요">
+                        </div>
+                        <button type="button" id="addFamilyName" aria-label="가족 이름 입력칸 추가">+</button>
+                    </div>
+                </fieldset>
+            </div>
+
             <div class="form-group">
                 <label for="area">구역</label>
                 <select id="area" name="area" required>
@@ -157,6 +177,14 @@
                     <div>
                         <dt>구역</dt>
                         <dd id="confirmArea"></dd>
+                    </div>
+                    <div>
+                        <dt>가족합산 요청</dt>
+                        <dd id="confirmFamilyTotalRequest"></dd>
+                    </div>
+                    <div id="confirmFamilyNamesRow" hidden>
+                        <dt>가족 합산</dt>
+                        <dd id="confirmFamilyNames"></dd>
                     </div>
                     <div>
                         <dt>개인정보 동의</dt>

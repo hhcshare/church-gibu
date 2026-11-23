@@ -13,6 +13,36 @@ const confirmation = document.getElementById("confirmation");
 const confirmationMessage = document.getElementById("confirmationMessage");
 const completeButton = document.getElementById("completeButton");
 const editButton = document.getElementById("editButton");
+const familyTotalYes = document.getElementById("familyTotalYes");
+const familyTotalNo = document.getElementById("familyTotalNo");
+const familyNamesFields = document.getElementById("familyNamesFields");
+const familyNames = document.getElementById("familyNames");
+
+function updateFamilyNamesFields() {
+    familyNamesFields.hidden = !familyTotalYes.checked;
+    familyNamesFields.disabled = !familyTotalYes.checked;
+}
+
+familyTotalYes.addEventListener("change", updateFamilyNamesFields);
+familyTotalNo.addEventListener("change", updateFamilyNamesFields);
+updateFamilyNamesFields();
+
+document.getElementById("addFamilyName").addEventListener("click", function () {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.name = "familyNames";
+    input.placeholder = "가족 이름을 입력하세요";
+    input.required = false;
+    input.setAttribute("aria-label", `가족 이름 ${familyNames.children.length + 1}`);
+    familyNames.appendChild(input);
+    input.focus();
+});
+
+function getFamilyNames() {
+    return familyTotalYes.checked
+        ? Array.from(familyNames.querySelectorAll("input"), input => input.value.trim())
+        : [];
+}
 
 /*
  * 주민등록번호 자동 하이픈
@@ -176,12 +206,16 @@ form.addEventListener("submit", function (e) {
         alert("전화번호를 확인해주세요.");
         phoneInput.focus();
         return;
-    }
+    }    
 
     document.getElementById("confirmName").textContent = nameInput.value;
     document.getElementById("confirmSsn").textContent = ssnInput.value;
     document.getElementById("confirmPhone").textContent = phoneInput.value;
     document.getElementById("confirmArea").textContent = areaInput.value;
+    document.getElementById("confirmFamilyTotalRequest").textContent =
+        familyTotalYes.checked ? "예" : "아니오";
+    document.getElementById("confirmFamilyNamesRow").hidden = !familyTotalYes.checked;
+    document.getElementById("confirmFamilyNames").textContent = getFamilyNames().join(", ");
 
     confirmationMessage.hidden = true;
     confirmationMessage.textContent = "";
@@ -203,6 +237,8 @@ completeButton.addEventListener("click", function () {
         ssn: ssnInput.value,
         phone: phoneInput.value,
         area: areaInput.value,
+        familyTotalRequest: familyTotalYes.checked ? "yes" : "no",
+        familyNames: getFamilyNames(),
         agree: agreementInput.checked
     };
 
