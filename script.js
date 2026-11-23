@@ -1,10 +1,18 @@
 const form = document.getElementById("donationForm");
 
+const nameInput = document.getElementById("name");
 const ssnInput = document.getElementById("ssn");
 const phoneInput = document.getElementById("phone");
+const areaInput = document.getElementById("area");
+const agreementInput = document.getElementById("agree");
 
 const ssnMessage = document.getElementById("ssnMessage");
 const phoneMessage = document.getElementById("phoneMessage");
+const applicationFields = document.getElementById("applicationFields");
+const confirmation = document.getElementById("confirmation");
+const confirmationMessage = document.getElementById("confirmationMessage");
+const completeButton = document.getElementById("completeButton");
+const editButton = document.getElementById("editButton");
 
 /*
  * 주민등록번호 자동 하이픈
@@ -148,9 +156,10 @@ phoneInput.addEventListener("blur", function () {
 });
 
 
-/*
- * 제출
- */
+function handleDonationSubmit(dataset) {
+    // 서버 연동 전까지 실제 전송은 수행하지 않습니다.
+}
+
 form.addEventListener("submit", function (e) {
 
     e.preventDefault();
@@ -169,15 +178,37 @@ form.addEventListener("submit", function (e) {
         return;
     }
 
-    const name =
-        document.getElementById("name").value;
+    document.getElementById("confirmName").textContent = nameInput.value;
+    document.getElementById("confirmSsn").textContent = ssnInput.value;
+    document.getElementById("confirmPhone").textContent = phoneInput.value;
+    document.getElementById("confirmArea").textContent = areaInput.value;
 
-    alert(
-        `${name}님\n전자 기부금 영수증 신청이 접수되었습니다.`
-    );
+    confirmationMessage.hidden = true;
+    confirmationMessage.textContent = "";
+    completeButton.disabled = false;
+    applicationFields.hidden = true;
+    confirmation.hidden = false;
+    document.getElementById("confirmationTitle").focus();
+});
 
-    form.reset();
+editButton.addEventListener("click", function () {
+    confirmation.hidden = true;
+    applicationFields.hidden = false;
+    nameInput.focus();
+});
 
-    ssnMessage.textContent = "";
-    phoneMessage.textContent = "";
+completeButton.addEventListener("click", function () {
+    const dataset = {
+        name: nameInput.value,
+        ssn: ssnInput.value,
+        phone: phoneInput.value,
+        area: areaInput.value,
+        agree: agreementInput.checked
+    };
+
+    handleDonationSubmit(dataset);
+    confirmationMessage.textContent =
+        "서버 전송 기능작 업중.";
+    confirmationMessage.hidden = false;
+    completeButton.disabled = true;
 });

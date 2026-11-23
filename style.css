@@ -53,12 +53,14 @@ h1{
     border:1px solid #d1d5db;
     border-radius:8px;
 
-    font-size:16px;
+    font-size:24px;
 }
 
 .agreement{
     margin-top:20px;
     padding:15px;
+    max-height:calc(10 * 1.6em + 32px);
+    overflow:auto;
 
     font-size:14px;
     line-height:1.6;
@@ -78,6 +80,60 @@ h1{
     margin:20px 0;
 }
 
+.checkbox-group input{
+    transform:scale(2);
+    transform-origin:top left;
+    margin:4px 8px 0 4px;
+}
+
+.checkbox-group label{
+    font-size:24px;
+}
+
+.confirmation h2{
+    margin-bottom:16px;
+    font-size:20px;
+}
+
+.confirmation dl{
+    margin-bottom:16px;
+}
+
+.confirmation dl div{
+    display:flex;
+    gap:12px;
+    padding:8px 0;
+    border-bottom:1px solid #e5e7eb;
+}
+
+.confirmation dt{
+    flex:0 0 120px;
+    font-weight:bold;
+}
+
+.confirmation dd{
+    overflow-wrap:anywhere;
+}
+
+#confirmationMessage{
+    margin-bottom:12px;
+    color:#92400e;
+}
+
+.confirmation-actions{
+    display:flex;
+    gap:12px;
+}
+
+.confirmation-actions button{
+    width:50%;
+}
+
+button:disabled{
+    background:#9ca3af;
+    cursor:not-allowed;
+}
+
 button{
     width:100%;
     padding:15px;
@@ -88,7 +144,7 @@ button{
     background:#2563eb;
     color:#ffffff;
 
-    font-size:16px;
+    font-size:24px;
     font-weight:bold;
 
     cursor:pointer;
@@ -103,13 +159,13 @@ button:hover{
 #ssnMessage{
     display:block;
     margin-top:6px;
-    font-size:13px;
+    font-size:24px;
 }
 
 small{
     display:block;
     margin-top:5px;
-    font-size:13px;
+    font-size:24px;
 }
 
 .success{
