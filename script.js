@@ -226,8 +226,14 @@ class SubmissionError extends Error {}
 
 async function getAppCheckToken() {
     const config = firebaseSettings.firebaseConfig;
-    if (!config.apiKey || !config.projectId || !config.appId ||
-        !firebaseSettings.appCheckSiteKey || !firebaseSettings.functionUrl) {
+    if (!config.apiKey || !config.projectId || !config.appId || !firebaseSettings.functionUrl) {
+        //!config.apiKey || !config.projectId || !config.appId || !firebaseSettings.functionUrl -> 로그로 출력
+        console.error("Firebase 설정이 완료되지 않았습니다.", {
+            apiKey: config.apiKey,
+            projectId: config.projectId,
+            appId: config.appId,
+            functionUrl: firebaseSettings.functionUrl
+        });
         throw new SubmissionError("Firebase 설정이 완료되지 않았습니다. 관리자에게 문의해주세요.");
     }
     let functionUrl;

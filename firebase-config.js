@@ -8,5 +8,5 @@ const firebaseSettings = {
     appId: "1:815015153338:web:4fa9919968629258eefc83"
   },
   appCheckSiteKey: "6LekrTQuAAAAAO3aUMspvaNarKkxW4ghHa78I1aV",
-  functionUrl: "",
+  functionUrl: "https://asia-northeast3-church-gibu-server.cloudfunctions.net/submitDonation",
 };
