@@ -220,21 +220,12 @@ phoneInput.addEventListener("blur", function () {
 
 
 let submissionAttempt = null;
-let appCheckPromise = null;
 
 class SubmissionError extends Error {}
 
-async function getAppCheckToken() {
-    const config = firebaseSettings.firebaseConfig;
-    if (!config.apiKey || !config.projectId || !config.appId || !firebaseSettings.functionUrl) {
-        //!config.apiKey || !config.projectId || !config.appId || !firebaseSettings.functionUrl -> 로그로 출력
-        console.error("Firebase 설정이 완료되지 않았습니다.", {
-            apiKey: config.apiKey,
-            projectId: config.projectId,
-            appId: config.appId,
-            functionUrl: firebaseSettings.functionUrl
-        });
-        throw new SubmissionError("Firebase 설정이 완료되지 않았습니다. 관리자에게 문의해주세요.");
+function validateFunctionUrl() {
+    if (!firebaseSettings.functionUrl) {
+        throw new SubmissionError("Firebase 함수 URL 설정이 완료되지 않았습니다. 관리자에게 문의해주세요.");
     }
     let functionUrl;
     try {
@@ -246,27 +237,6 @@ async function getAppCheckToken() {
         !(functionUrl.protocol === "http:" && ["localhost", "127.0.0.1"].includes(functionUrl.hostname))) {
         throw new SubmissionError("Firebase 함수 URL은 HTTPS를 사용해야 합니다.");
     }
-
-    if (!appCheckPromise) {
-        appCheckPromise = Promise.all([
-            import("https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js"),
-            import("https://www.gstatic.com/firebasejs/12.6.0/firebase-app-check.js")
-        ]).then(([appModule, appCheckModule]) => {
-            const app = appModule.initializeApp(config);
-            return {
-                appCheck: appCheckModule.initializeAppCheck(app, {
-                    provider: new appCheckModule.ReCaptchaEnterpriseProvider(firebaseSettings.appCheckSiteKey),
-                    isTokenAutoRefreshEnabled: true
-                }),
-                getToken: appCheckModule.getToken
-            };
-        }).catch(error => {
-            appCheckPromise = null;
-            throw error;
-        });
-    }
-    const { appCheck, getToken } = await appCheckPromise;
-    return (await getToken(appCheck)).token;
 }
 
 async function handleDonationSubmit(dataset) {
@@ -278,15 +248,14 @@ async function handleDonationSubmit(dataset) {
         submissionAttempt = { payload, requestId: globalThis.crypto.randomUUID() };
     }
 
-    const token = await getAppCheckToken();
+    validateFunctionUrl();
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30000);
     try {
         const response = await fetch(firebaseSettings.functionUrl, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
-                "X-Firebase-AppCheck": token
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({ requestId: submissionAttempt.requestId, submission: dataset }),
             signal: controller.signal
@@ -296,7 +265,7 @@ async function handleDonationSubmit(dataset) {
                 throw new SubmissionError("입력 내용을 확인한 뒤 다시 신청해주세요.");
             }
             if (response.status === 401 || response.status === 403) {
-                throw new SubmissionError("앱 확인 또는 접근 설정에 실패했습니다. 관리자에게 문의해주세요.");
+                throw new SubmissionError("서버 접근 설정을 확인해주세요. 관리자에게 문의해주세요.");
             }
             if (response.status === 409) {
                 throw new SubmissionError("기존 신청과 내용이 다릅니다. 관리자에게 문의해주세요.");

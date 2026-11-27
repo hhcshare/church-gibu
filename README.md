@@ -6,9 +6,9 @@ https://hhcshare.github.io/church-gibu/
 
 # 개인정보등 민감한 정보 처리 방법
 ## 기본 구조
-GitHub Pages -> Firebase App Check -> Cloud Functions -> Firestore
+GitHub Pages -> Cloud Functions -> Firestore
 
-Firestore에는 주민등록번호를 별도 필드 암호화 없이 저장합니다. Firebase 설정과 접근 제한 등은 서버 프로젝트의 README를 확인하세요. 서버 연동을 사용하려면 `firebase-config.js`에 웹 앱 설정, reCAPTCHA Enterprise 사이트 키와 배포된 함수 URL을 입력해야 합니다.
+Firestore에는 주민등록번호를 별도 필드 암호화 없이 저장합니다. Firebase 설정과 접근 제한 등은 서버 프로젝트의 README를 확인하세요. 서버 연동을 사용하려면 `firebase-config.js`의 `functionUrl`에 배포된 함수 URL을 입력해야 합니다. App Check와 reCAPTCHA는 사용하지 않으며 기존 `firebaseConfig` 값은 전송에 사용하지 않습니다. 공개 API의 남용 방지를 위한 별도 대책이 필요합니다.
 
 
 ## 입력받을 정보
