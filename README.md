@@ -2,8 +2,10 @@
 대한예수교장로회 전자 기부금 영수증을 교인으로 부터 편리하게 받는 방법을 만들려고 합니다.
 
 # 개인정보등 민감한 정보 처리 방법
-## 기본 구조 
-GitHub Pages -> Firebase Authentication -> Cloud Functions -> Firestore (암호화)
+## 기본 구조
+GitHub Pages -> Firebase App Check -> Cloud Functions -> Firestore
+
+Firestore에는 주민등록번호를 별도 필드 암호화 없이 저장합니다. Firebase 설정과 접근 제한 등은 서버 프로젝트의 README를 확인하세요. 서버 연동을 사용하려면 `firebase-config.js`에 웹 앱 설정, reCAPTCHA Enterprise 사이트 키와 배포된 함수 URL을 입력해야 합니다.
 
 
 ## 입력받을 정보
@@ -15,9 +17,9 @@ GitHub Pages -> Firebase Authentication -> Cloud Functions -> Firestore (암호�
 4. 주소
 
 ## 가족합산 요청
-- 가족합산 요청에서 '예'를 선택하면 가족 이름을 입력합니다. `+` 버튼으로 이름 입력칸을 추가할 수 있으며, 표시된 입력칸은 모두 필수입니다.
-- '아니오'를 선택하면 가족 이름 입력칸을 숨기고 전송용 데이터에서 제외합니다. 다시 '예'를 선택하면 입력했던 이름이 유지됩니다.
-- 확인 화면에 가족합산 여부와 이름 목록을 표시합니다. 전송용 `dataset`에는 `familyTotalRequest` (`yes` 또는 `no`)와 `familyNames` (이름 배열, 미요청 시 빈 배열)를 포함합니다. 실제 서버 전송은 아직 연결하지 않았습니다.
+- 가족합산 요청에서 '예'를 선택하면 가족 이름과 비율(%)을 입력할 수 있습니다. `+` 버튼으로 이름과 비율 입력칸을 한 쌍씩 추가하며, 입력은 선택사항입니다.
+- '아니오'를 선택하면 가족 입력칸을 숨기고 전송용 데이터에서 제외합니다. 다시 '예'를 선택하면 입력했던 이름과 비율이 유지됩니다.
+- 확인 화면에 가족합산 여부와 이름별 비율을 표시합니다. 전송용 `dataset`에는 `familyTotalRequest` (`yes` 또는 `no`), `familyNames` (기존 이름 배열), `familyMembers` (`name`과 `percentage` 문자열로 구성된 배열)를 포함합니다. 비율이 비어 있으면 빈 문자열이며, 미요청 시 두 배열은 비어 있습니다. 서버에는 `familyMembers`가 저장됩니다.
 
 ## 개인정보 고지
 1. 활용 범위 공지

@@ -48,19 +48,24 @@ familyTotalNo.addEventListener("change", updateFamilyNamesFields);
 updateFamilyNamesFields();
 
 document.getElementById("addFamilyName").addEventListener("click", function () {
-    const input = document.createElement("input");
-    input.type = "text";
-    input.name = "familyNames";
-    input.placeholder = "가족 이름을 입력하세요";
-    input.required = false;
-    input.setAttribute("aria-label", `가족 이름 ${familyNames.children.length + 1}`);
-    familyNames.appendChild(input);
-    input.focus();
+    const row = familyNames.firstElementChild.cloneNode(true);
+    const name = row.querySelector('[name="familyNames"]');
+    const percentage = row.querySelector('[name="familyPercentages"]');
+    const index = familyNames.children.length + 1;
+    name.value = "";
+    percentage.value = "";
+    name.setAttribute("aria-label", `가족 이름 ${index}`);
+    percentage.setAttribute("aria-label", `가족 비율 ${index}`);
+    familyNames.appendChild(row);
+    name.focus();
 });
 
-function getFamilyNames() {
+function getFamilyMembers() {
     return familyTotalYes.checked
-        ? Array.from(familyNames.querySelectorAll("input"), input => input.value.trim())
+        ? Array.from(familyNames.children, row => ({
+            name: row.querySelector('[name="familyNames"]').value.trim(),
+            percentage: row.querySelector('[name="familyPercentages"]').value
+        }))
         : [];
 }
 
@@ -214,8 +219,91 @@ phoneInput.addEventListener("blur", function () {
 });
 
 
-function handleDonationSubmit(dataset) {
-    // 서버 연동 전까지 실제 전송은 수행하지 않습니다.
+let submissionAttempt = null;
+let appCheckPromise = null;
+
+class SubmissionError extends Error {}
+
+async function getAppCheckToken() {
+    const config = firebaseSettings.firebaseConfig;
+    if (!config.apiKey || !config.projectId || !config.appId ||
+        !firebaseSettings.appCheckSiteKey || !firebaseSettings.functionUrl) {
+        throw new SubmissionError("Firebase 설정이 완료되지 않았습니다. 관리자에게 문의해주세요.");
+    }
+    let functionUrl;
+    try {
+        functionUrl = new URL(firebaseSettings.functionUrl);
+    } catch (error) {
+        throw new SubmissionError("Firebase 함수 URL 설정을 확인해주세요.");
+    }
+    if (functionUrl.protocol !== "https:" &&
+        !(functionUrl.protocol === "http:" && ["localhost", "127.0.0.1"].includes(functionUrl.hostname))) {
+        throw new SubmissionError("Firebase 함수 URL은 HTTPS를 사용해야 합니다.");
+    }
+
+    if (!appCheckPromise) {
+        appCheckPromise = Promise.all([
+            import("https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js"),
+            import("https://www.gstatic.com/firebasejs/12.6.0/firebase-app-check.js")
+        ]).then(([appModule, appCheckModule]) => {
+            const app = appModule.initializeApp(config);
+            return {
+                appCheck: appCheckModule.initializeAppCheck(app, {
+                    provider: new appCheckModule.ReCaptchaEnterpriseProvider(firebaseSettings.appCheckSiteKey),
+                    isTokenAutoRefreshEnabled: true
+                }),
+                getToken: appCheckModule.getToken
+            };
+        }).catch(error => {
+            appCheckPromise = null;
+            throw error;
+        });
+    }
+    const { appCheck, getToken } = await appCheckPromise;
+    return (await getToken(appCheck)).token;
+}
+
+async function handleDonationSubmit(dataset) {
+    const payload = JSON.stringify(dataset);
+    if (!submissionAttempt || submissionAttempt.payload !== payload) {
+        if (!globalThis.crypto || !globalThis.crypto.randomUUID) {
+            throw new SubmissionError("안전한 연결에서 신청해주세요.");
+        }
+        submissionAttempt = { payload, requestId: globalThis.crypto.randomUUID() };
+    }
+
+    const token = await getAppCheckToken();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    try {
+        const response = await fetch(firebaseSettings.functionUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Firebase-AppCheck": token
+            },
+            body: JSON.stringify({ requestId: submissionAttempt.requestId, submission: dataset }),
+            signal: controller.signal
+        });
+        if (!response.ok) {
+            if (response.status === 400) {
+                throw new SubmissionError("입력 내용을 확인한 뒤 다시 신청해주세요.");
+            }
+            if (response.status === 401 || response.status === 403) {
+                throw new SubmissionError("앱 확인 또는 접근 설정에 실패했습니다. 관리자에게 문의해주세요.");
+            }
+            if (response.status === 409) {
+                throw new SubmissionError("기존 신청과 내용이 다릅니다. 관리자에게 문의해주세요.");
+            }
+            throw new Error("신청 전송에 실패했습니다.");
+        }
+        const result = await response.json();
+        if (result.ok !== true) {
+            throw new Error("서버 응답을 확인하지 못했습니다. 다시 시도해주세요.");
+        }
+    } finally {
+        clearTimeout(timeout);
+    }
 }
 
 form.addEventListener("submit", function (e) {
@@ -244,7 +332,9 @@ form.addEventListener("submit", function (e) {
     document.getElementById("confirmFamilyTotalRequest").textContent =
         familyTotalYes.checked ? "예" : "아니오";
     document.getElementById("confirmFamilyNamesRow").hidden = !familyTotalYes.checked;
-    document.getElementById("confirmFamilyNames").textContent = getFamilyNames().join(", ");
+    document.getElementById("confirmFamilyNames").textContent = getFamilyMembers()
+        .map(member => member.percentage === "" ? member.name : `${member.name} (${member.percentage}%)`)
+        .join(", ");
 
     confirmationMessage.hidden = true;
     confirmationMessage.textContent = "";
@@ -260,7 +350,8 @@ editButton.addEventListener("click", function () {
     nameInput.focus();
 });
 
-completeButton.addEventListener("click", function () {
+completeButton.addEventListener("click", async function () {
+    const familyMembers = getFamilyMembers();
     const dataset = {
         personOrCorp: corporationInput.checked ? "corporation" : "person",
         name: nameInput.value,
@@ -268,13 +359,24 @@ completeButton.addEventListener("click", function () {
         phone: phoneInput.value,
         area: areaInput.value,
         familyTotalRequest: familyTotalYes.checked ? "yes" : "no",
-        familyNames: getFamilyNames(),
+        familyNames: familyMembers.map(member => member.name),
+        familyMembers: familyMembers,
         agree: agreementInput.checked
     };
 
-    handleDonationSubmit(dataset);
-    confirmationMessage.textContent =
-        "서버 전송 기능작 업중.";
-    confirmationMessage.hidden = false;
     completeButton.disabled = true;
+    editButton.disabled = true;
+    confirmationMessage.textContent = "신청 내용을 전송하고 있습니다.";
+    confirmationMessage.hidden = false;
+    try {
+        await handleDonationSubmit(dataset);
+        confirmationMessage.textContent = "신청이 완료되었습니다.";
+    } catch (error) {
+        console.error("신청 전송에 실패했습니다.");
+        confirmationMessage.textContent = error instanceof SubmissionError
+            ? error.message
+            : "전송 결과를 확인하지 못했습니다. 저장되었을 수도 있으므로 새로고침하지 말고 다시 시도해주세요.";
+        completeButton.disabled = false;
+        editButton.disabled = false;
+    }
 });

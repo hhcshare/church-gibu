@@ -11,10 +11,13 @@
 
     <div class="container">
 
-        <h1>
-            하늘소망교회<br>
-            전자 기부금 영수증 신청
-        </h1>
+        <header class="page-header">
+            <img src="Logo.png" alt="하늘소망교회">
+            <h1>
+                하늘소망교회<br>
+                전자 기부금 영수증 신청
+            </h1>
+        </header>
 
         <form id="donationForm">
 
@@ -73,12 +76,18 @@
                     <label for="familyTotalNo">아니오</label>
                 </div>
                 <fieldset id="familyNamesFields" hidden disabled>
-                    <legend>가족 이름</legend>
+                    <legend>가족 이름 및 비율</legend>
                     <div class="family-names-row">
                         <div id="familyNames">
-                            <input type="text" name="familyNames" aria-label="가족 이름 1" placeholder="가족 이름을 입력하세요">
+                            <div class="family-member">
+                                <input type="text" name="familyNames" aria-label="가족 이름 1" placeholder="가족 이름">
+                                <div class="family-percentage">
+                                    <input type="number" name="familyPercentages" aria-label="가족 비율 1" placeholder="비율" step="any">
+                                    <span aria-hidden="true">%</span>
+                                </div>
+                            </div>
                         </div>
-                        <button type="button" id="addFamilyName" aria-label="가족 이름 입력칸 추가">+</button>
+                        <button type="button" id="addFamilyName" aria-label="가족 이름 및 비율 입력칸 추가">+</button>
                     </div>
                 </fieldset>
             </div>
@@ -211,6 +220,7 @@
 
     </div>
 
+    <script src="firebase-config.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
