@@ -21,7 +21,29 @@ const familyTotalNo = document.getElementById("familyTotalNo");
 const familyNamesFields = document.getElementById("familyNamesFields");
 const familyNames = document.getElementById("familyNames");
 
+let maskedSsnValue = null;
+
+function getIdentificationNumber() {
+    return maskedSsnValue === null ? ssnInput.value : maskedSsnValue;
+}
+
+function restoreIdentificationNumber() {
+    ssnInput.value = getIdentificationNumber();
+    maskedSsnValue = null;
+}
+
+function maskValidRRN() {
+    const value = getIdentificationNumber();
+    if (!validateRRN(value)) {
+        return false;
+    }
+    maskedSsnValue = value;
+    ssnInput.value = `${value.replace(/-/g, "").substring(0, 6)}-*******`;
+    return true;
+}
+
 function updateIdentificationField() {
+    restoreIdentificationNumber();
     const isCorporation = corporationInput.checked;
     ssnLabel.textContent = isCorporation ? "법인 사업자번호" : "주민등록번호";
     ssnInput.placeholder = isCorporation ? "법인 사업자번호를 입력하세요" : "예) 900101-1234567";
@@ -29,6 +51,7 @@ function updateIdentificationField() {
         ssnInput.removeAttribute("maxlength");
     } else {
         ssnInput.maxLength = 14;
+        maskValidRRN();
     }
     ssnMessage.textContent = "";
     ssnMessage.className = "";
@@ -37,6 +60,8 @@ function updateIdentificationField() {
 personInput.addEventListener("change", updateIdentificationField);
 corporationInput.addEventListener("change", updateIdentificationField);
 updateIdentificationField();
+
+ssnInput.addEventListener("focus", restoreIdentificationNumber);
 
 function updateFamilyNamesFields() {
     familyNamesFields.hidden = !familyTotalYes.checked;
@@ -76,6 +101,8 @@ function getFamilyMembers() {
  * 123456-1234567
  */
 ssnInput.addEventListener("input", function () {
+
+    maskedSsnValue = null;
 
     if (corporationInput.checked) {
         return;
@@ -172,7 +199,7 @@ ssnInput.addEventListener("blur", function () {
         return;
     }
 
-    if (validateRRN(this.value)) {
+    if (maskValidRRN()) {
 
         ssnMessage.textContent =
             "올바른 주민등록번호입니다.";
@@ -285,7 +312,7 @@ form.addEventListener("submit", function (e) {
 
     e.preventDefault();
 
-    if (!corporationInput.checked && !validateRRN(ssnInput.value)) {
+    if (!corporationInput.checked && !maskValidRRN()) {
 
         alert("주민등록번호를 확인해주세요.");
         ssnInput.focus();
@@ -301,7 +328,7 @@ form.addEventListener("submit", function (e) {
 
     document.getElementById("confirmName").textContent = nameInput.value;
     document.getElementById("confirmSsnLabel").textContent = ssnLabel.textContent;
-    document.getElementById("confirmSsn").textContent = ssnInput.value;
+    document.getElementById("confirmSsn").textContent = getIdentificationNumber();
     document.getElementById("confirmPhone").textContent = phoneInput.value;
     document.getElementById("confirmArea").textContent = areaInput.value;
     document.getElementById("confirmFamilyTotalRequest").textContent =
@@ -330,7 +357,7 @@ completeButton.addEventListener("click", async function () {
     const dataset = {
         personOrCorp: corporationInput.checked ? "corporation" : "person",
         name: nameInput.value,
-        ssn: ssnInput.value,
+        ssn: getIdentificationNumber(),
         phone: phoneInput.value,
         area: areaInput.value,
         familyTotalRequest: familyTotalYes.checked ? "yes" : "no",
