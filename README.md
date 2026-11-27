@@ -7,6 +7,8 @@ GitHub Pages -> Firebase Authentication -> Cloud Functions -> Firestore (암호�
 
 
 ## 입력받을 정보
+개인은 주민등록번호를 입력하고 기존 검증을 거칩니다. 법인은 법인 사업자번호를 입력하며 번호 형식이나 유효성을 검사하지 않습니다. 번호 입력은 모두 필수입니다. 확인 화면에도 선택에 맞는 항목명이 표시되며, 전송용 `dataset`에는 `personOrCorp` (`person` 또는 `corporation`)와 번호를 담는 `ssn`이 포함됩니다.
+
 1. 성함
 2. 주민번호
 3. 번화번호

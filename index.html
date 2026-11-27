@@ -19,6 +19,15 @@
         <form id="donationForm">
 
             <div id="applicationFields">
+            <!-- 개인 또는 법인 선택 -->
+            <label id="PersonOrCorpLabel">개인/법인</label>
+            <div class="radio-group" style="justify-content:center;" role="group" aria-labelledby="PersonOrCorpLabel">
+                <input type="radio" id="person" text = "개인" name="personOrCorp" value="person" required>
+                <label for="person">개인</label>
+                <input type="radio" id="corporation" text = "법인" name="personOrCorp" value="corporation" required>
+                <label for="corporation">법인</label>
+            </div>
+
             <div class="form-group">
                 <label for="name">성함</label>
                 <input
@@ -30,7 +39,7 @@
             </div>
 
            <div class="form-group">
-            <label for="ssn">주민등록번호</label>
+            <label for="ssn" id="ssnLabel">주민등록번호</label>
             <input
                 type="text"
                 id="ssn"
@@ -167,7 +176,7 @@
                         <dd id="confirmName"></dd>
                     </div>
                     <div>
-                        <dt>주민등록번호</dt>
+                        <dt id="confirmSsnLabel">주민등록번호</dt>
                         <dd id="confirmSsn"></dd>
                     </div>
                     <div>
